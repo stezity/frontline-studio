@@ -41,5 +41,7 @@ jobs:
             echo "Данные не изменились"
           else
             git commit -m "Обновление данных OSM"
+            # Пока шла сборка, в main могли появиться другие коммиты — встраиваемся поверх них.
+            git pull --rebase origin main
             git push
           fi
