@@ -13,10 +13,11 @@
    "counts": {
     "military": 43,
     "settlement": 164,
-    "peak": 18,
-    "approx": 162
+    "peak": 17,
+    "approx": 13,
+    "builtup": 149
    },
-   "updated": "2026-10-02T02:51:30.491Z"
+   "updated": "2026-10-02T04:03:50.923Z"
   },
   {
    "id": 318236,
@@ -33,9 +34,10 @@
     "airfield": 1,
     "settlement": 229,
     "peak": 10,
-    "approx": 226
+    "approx": 12,
+    "builtup": 214
    },
-   "updated": "2026-10-02T02:49:32.566Z"
+   "updated": "2026-10-02T03:59:41.134Z"
   },
   {
    "id": 1375620,
@@ -52,9 +54,10 @@
     "military": 207,
     "airfield": 3,
     "peak": 80,
-    "approx": 14
+    "approx": 9,
+    "builtup": 5
    },
-   "updated": "2026-10-02T02:49:11.357Z"
+   "updated": "2026-10-02T03:59:20.430Z"
   },
   {
    "id": 1473938,
@@ -74,7 +77,27 @@
     "builtup": 0
    },
    "updated": "2026-10-02T03:53:53.202Z"
+  },
+  {
+   "id": 1473952,
+   "name": "Южный округ",
+   "file": "regions/1473952.json",
+   "bbox": [
+    34.2675,
+    29.4878,
+    35.476,
+    31.8728
+   ],
+   "counts": {
+    "settlement": 370,
+    "airfield": 11,
+    "military": 449,
+    "peak": 80,
+    "approx": 18,
+    "builtup": 58
+   },
+   "updated": "2026-10-02T04:08:33.280Z"
   }
  ],
- "updated": "2026-10-02T03:53:53.202Z"
+ "updated": "2026-10-02T04:08:33.280Z"
 }
