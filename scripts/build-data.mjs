@@ -8,7 +8,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import * as turf from '@turf/turf';
-import { osmQueries, osmBuildFeatures, osmElementGeometry, osmNameOf, osmLooksBroken } from './osm-core.mjs';
+import { osmQueries, osmBuildFeatures, osmElementGeometry, osmNameOf, osmLooksBroken, osmAreaFor, osmDateLabel } from './osm-core.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const UA = 'FrontlineStudio-data-builder/1.0';
@@ -44,25 +44,28 @@ async function overpass(query) {
   throw last;
 }
 
-async function buildRegion(id) {
+async function buildRegion(id, cfg = {}) {
   console.log(`Region ${id}: boundary…`);
   const rel = (await overpass(`[out:json][timeout:300];rel(${id});out geom;`)).elements.find(e => e.type === 'relation');
   if (!rel) throw new Error('relation not found');
   const boundary = osmElementGeometry(turf, rel);
   if (!boundary) throw new Error('relation has no closed boundary');
   const name = osmNameOf(rel.tags || {});
-  const [w, s, e, n] = turf.bbox(turf.feature(boundary)), q = osmQueries([s, w, n, e].map(v => v.toFixed(5)).join(','));
-  console.log(`  ${name}: objects…`);
+  const bbox = turf.bbox(turf.feature(boundary)), [w, s, e, n] = bbox;
+  // regions.json may pin a date; otherwise known areas (osm-core OSM_SNAPSHOTS) use their snapshot
+  const area = cfg.date === 'current' ? null : osmAreaFor(id, bbox), date = cfg.date === 'current' ? null : cfg.date || area?.date || null;
+  const q = osmQueries([s, w, n, e].map(v => v.toFixed(5)).join(','), { date, districts: !!area?.districts });
+  console.log(`  ${name}: objects${date ? ' (OSM на ' + osmDateLabel(date) + ')' : ''}…`);
   const objects = await overpass(q.objects);
   await sleep(3000);
   const nodes = await overpass(q.nodes);
   if (osmLooksBroken(objects, nodes)) throw new Error('пустой ответ на запрос объектов — вероятно, сбой зеркала Overpass');
   await sleep(3000);
   const residential = await overpass(q.residential);
-  const { features, counts } = osmBuildFeatures(turf, { boundary, objects, nodes, residential });
+  const { features, counts } = osmBuildFeatures(turf, { boundary, objects, nodes, residential, area });
   const simple = turf.simplify(turf.feature(boundary), { tolerance: 0.0003, highQuality: false }).geometry;
   const out = {
-    id, name, updated: new Date().toISOString(),
+    id, name, updated: new Date().toISOString(), ...(date ? { snapshot: date } : {}),
     bbox: turf.bbox(turf.feature(boundary)).map(round4),
     boundary: { type: simple.type, coordinates: simple.coordinates },
     counts, features,
@@ -72,7 +75,8 @@ async function buildRegion(id) {
   try { prev = JSON.parse(await fs.readFile(file, 'utf8')); } catch {}
   // A sudden collapse (half the military objects or settlement outlines gone) is almost always a broken
   // Overpass response rather than a real change in OSM: keep the previous data and report it.
-  if (prev?.counts) {
+  // (only when comparing like with like: switching a province to a dated snapshot changes everything)
+  if (prev?.counts && (prev.snapshot || null) === date) {
     const real = c => (c.settlement || 0) - (c.approx || 0);
     for (const [label, before, now] of [['военных объектов', prev.counts.military || 0, counts.military || 0],
       ['аэродромов', prev.counts.airfield || 0, counts.airfield || 0], ['контуров поселений', real(prev.counts), real(counts)]])
@@ -85,7 +89,7 @@ async function buildRegion(id) {
   }
   await fs.writeFile(file, JSON.stringify(out));
   console.log(`  ✓ ${name}:`, JSON.stringify(counts));
-  return { id, name, file: `regions/${id}.json`, bbox: out.bbox, counts, updated: out.updated };
+  return { id, name, file: `regions/${id}.json`, bbox: out.bbox, counts, updated: out.updated, ...(date ? { snapshot: date } : {}) };
 }
 
 const config = JSON.parse(await fs.readFile(path.join(ROOT, 'regions.json'), 'utf8'));
@@ -99,7 +103,7 @@ let failed = 0;
 for (const r of config.regions) {
   if (only.length && !only.includes(r.id)) continue;
   try {
-    const entry = await buildRegion(r.id);
+    const entry = await buildRegion(r.id, r);
     index.regions = index.regions.filter(x => x.id !== r.id).concat(entry);
   } catch (e) { failed++; console.error(`  ✗ ${r.id} (${r.name || ''}): ${e.message}`); }
   await sleep(5000);

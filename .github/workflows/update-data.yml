@@ -33,6 +33,9 @@ jobs:
       - name: Сборка данных
         run: node scripts/build-data.mjs
       - name: Сохранить изменения
+        # Даже если часть провинций не собралась (Overpass перегружен), успешно собранные сохраняются;
+        # сам запуск при этом остаётся помеченным как ошибка.
+        if: ${{ !cancelled() }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

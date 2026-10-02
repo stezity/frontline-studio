@@ -218,7 +218,7 @@ button:disabled{cursor:var(--cur-arrow)}input:not([type]),input[type=text],input
  button,select,input,label{touch-action:manipulation}
 }
 </style></head><body>
-<div id="map"></div><button id="exitView" hidden>← Вернуться к редактору</button><header class="panel top"><strong><span class="logo">◈</span> Frontline Studio <small class="version">v1.5.1</small></strong><div class="search"><input id="search" placeholder="Найти место и нажать Enter…" autocomplete="off"><button id="searchGo" title="Искать" aria-label="Искать">⌕</button><div id="results" class="results" hidden></div></div><button id="undo" title="Отменить (Ctrl+Z)">↶<span>Отменить</span></button><button id="redo" title="Вернуть (Ctrl+Y)">↷<span>Вернуть</span></button><button id="settingsBtn">⚙ Настройки</button></header>
+<div id="map"></div><button id="exitView" hidden>← Вернуться к редактору</button><header class="panel top"><strong><span class="logo">◈</span> Frontline Studio <small class="version">v1.6.0</small></strong><div class="search"><input id="search" placeholder="Найти место и нажать Enter…" autocomplete="off"><button id="searchGo" title="Искать" aria-label="Искать">⌕</button><div id="results" class="results" hidden></div></div><button id="undo" title="Отменить (Ctrl+Z)">↶<span>Отменить</span></button><button id="redo" title="Вернуть (Ctrl+Y)">↷<span>Вернуть</span></button><button id="settingsBtn">⚙ Настройки</button></header>
 <nav class="panel tools" id="tools"><button data-tool="view" title="Обзор (1)"><i class="ico">☛</i> <span>Обзор</span><kbd>1</kbd></button><button data-tool="front" title="Фронт (5)"><i class="ico">╱</i> <span>Фронт</span><kbd>5</kbd></button><button data-tool="attack" title="Наступление (2)"><i class="ico">⬡</i> <span>Наступление</span><kbd>2</kbd></button><button data-tool="pen" title="Перо — наступление по точкам (6)"><i class="ico">✒</i> <span>Перо</span><kbd>6</kbd></button><button data-tool="brush" title="Кисть (3)"><i class="ico">●</i> <span>Кисть</span><kbd>3</kbd></button><button data-tool="measure" title="Рулетка (4)"><i class="ico">⌁</i> <span>Рулетка</span><kbd>4</kbd></button><button id="initialQuickToggle" title="Независимая исходная линия"><i class="ico">╍</i> <span>Исходная</span></button><button id="mobileMenuBtn" class="m-only" title="Меню"><i class="ico">☰</i> <span>Меню</span></button></nav>
 <section class="panel sides"><small>Активная сторона</small><div><button id="side1" data-side="1"></button><button id="side2" data-side="2"></button></div><div id="additionalSideControls"></div><div class="side-tools"><button id="renameSide" title="Переименовать активную сторону (или двойной клик по стороне)">✎<span> Имя</span></button><button id="countryOpen" title="Построить фронт по границам двух стран или регионов">🌍<span> Страны</span></button><button id="turnToggle" title="Режим хода: копить несколько действий и выполнить их вместе">⏯<span> Ход</span></button></div></section>
 <section class="panel sliders"><label>Серая зона <b id="greyVal"></b><input id="grey" type="range" min="0" max="9" step="1"></label><label>Анимация <b id="durationVal"></b><input id="duration" type="range" min="1" max="60" step="1"></label><label>Кисть <b id="brushVal"></b><input id="brushSize" type="range" min="0" max="10" step="1"></label></section>
@@ -826,7 +826,7 @@ function pagesRepo(){let h=location.hostname;if(!/\.github\.io$/i.test(h))return
 function dataBases(){let out=[];if(/^https?:$/.test(location.protocol))out.push(new URL('data/',location.href).href);for(const repo of [dataRepo(),pagesRepo()].filter(Boolean))out.push('https://cdn.jsdelivr.net/gh/'+repo+'@main/data/','https://raw.githubusercontent.com/'+repo+'/main/data/');return [...new Set(out)]}
 async function fetchRegionData(id,rebuild){if(!rebuild&&T.data.get(id))return T.data.get(id);if(T.loading.has(id))return T.loading.get(id);
  let p=(async()=>{if(!rebuild){for(const base of dataBases()){try{let r=await fetch(base+'regions/'+id+'.json',{cache:'no-cache'});if(!r.ok)continue;let d=await r.json();if(d&&Array.isArray(d.features)){d.source=base;return d}}catch(e){}}
-   let cached=await idbGet('osm-region-'+id);if(cached?.features)return cached}
+   let cached=await idbGet('osm-region-'+id);if(cached?.features&&(cached.snapshot||!osmDateFor(id,cached.bbox)))return cached}
   return liveBuild(allRegions().find(x=>x.id===id)||{id,name:String(id)})})();
  T.loading.set(id,p);let d=await p;T.loading.delete(id);if(d||!T.data.get(id))T.data.set(id,d);return T.data.get(id)}
 function tStatus(text,err){let s=$('tStatus');if(!s)return;s.textContent=text||'';s.classList.toggle('err',!!err)}
@@ -854,6 +854,7 @@ const LABEL_MIN_ZOOM=12,PEAK_MIN_ZOOM=11;
 function hatchFill(col){let svg=T.svg?._container;if(!svg)return col;let id='fs-hatch-'+col.replace(/[^a-z0-9]/gi,'');if(!svg.querySelector('#'+id)){let ns='http://www.w3.org/2000/svg',defs=svg.querySelector('defs')||svg.insertBefore(document.createElementNS(ns,'defs'),svg.firstChild),p=document.createElementNS(ns,'pattern');p.id=id;p.setAttribute('patternUnits','userSpaceOnUse');p.setAttribute('width','7');p.setAttribute('height','7');p.setAttribute('patternTransform','rotate(45)');
   let bg=document.createElementNS(ns,'rect');bg.setAttribute('width','7');bg.setAttribute('height','7');bg.setAttribute('fill',col);bg.setAttribute('fill-opacity','.1');let ln=document.createElementNS(ns,'line');ln.setAttribute('x1','0');ln.setAttribute('y1','0');ln.setAttribute('x2','0');ln.setAttribute('y2','7');ln.setAttribute('stroke',col);ln.setAttribute('stroke-width','2.4');ln.setAttribute('stroke-opacity','.7');p.append(bg,ln);defs.append(p)}return 'url(#'+id+')'}
 function polyStyle(f){let own=ownerAt(f.p[1],f.p[0]),fill=ownColor(own),col=labelColor(fill);f._own=own;
+ if(f.k==='settlement'&&f.dist)return {color:col,weight:.9,opacity:.8,fillColor:fill,fillOpacity:.001,dashArray:'2 3'};
  if(f.k==='settlement')return {color:col,weight:1.2,opacity:.95,fillColor:fill,fillOpacity:.14,dashArray:f.a||f.ruin?'3 4':null};
  if(f.k==='airfield')return {color:col,weight:1.6,opacity:1,fillColor:fill,fillOpacity:.16,dashArray:'1 4',lineCap:'round'};
  return {color:col,weight:1.6,opacity:1,fillColor:hatchFill(col),fillOpacity:1}}
@@ -874,8 +875,9 @@ function renderTargets(){if(!T.layer)return;for(const g of [T.layer,T.cityLayer,
  if(t.show&&!isImageMode()){
   if(t.cats.region)for(const r of allRegions()){let d=T.data.get(r.id);if(!d?.boundary)continue;L.geoJSON({type:'Feature',geometry:d.boundary},{interactive:false,style:{color:'#f5b544',weight:2.4,dashArray:'10 6',fill:false,opacity:.85}}).addTo(T.layer);
    try{d._lab??=turf.pointOnFeature({type:'Feature',geometry:d.boundary}).geometry.coordinates;L.marker([d._lab[1],d._lab[0]],{interactive:false,keyboard:false,icon:L.divIcon({className:'region-label',html:el('span',null,cleanAreaName(d.name)),iconSize:null})}).addTo(T.layer)}catch(e){}}
-  for(const k of ['settlement','airfield','military'])if(t.cats[k]){let list=allFeatures(k);if(!list.length)continue;
+  for(const k of ['settlement','airfield','military'])if(t.cats[k]){let list=allFeatures(k).filter(f=>f.g);if(k==='settlement')list.sort((a,b)=>(a.dist||0)-(b.dist||0));if(!list.length)continue;
    let gl=L.geoJSON({type:'FeatureCollection',features:list.map(f=>f._gj??={type:'Feature',properties:f,geometry:f.g})},{renderer:k==='settlement'?undefined:T.svg,style:ft=>polyStyle(ft.properties),onEachFeature:(ft,l)=>{l.bindTooltip(ft.properties.n||ft.properties.s,{sticky:true,className:'tgt-tip'});l.on('click',e=>tPop(e,ft.properties));l.on('mouseover',()=>{if(tool==='view')l.setStyle({weight:3})});l.on('mouseout',()=>gl.resetStyle(l))}}).addTo(T.cityLayer);T.geo.push(gl)}
+  if(t.cats.settlement)for(const f of allFeatures('settlement')){if(f.g)continue;let col=ownColor(ownerAt(f.p[1],f.p[0])),dot=L.circleMarker([f.p[1],f.p[0]],{radius:f.dist?3.4:4,color:labelColor(col),weight:f.dist?1.6:1,opacity:.95,fillColor:col,fillOpacity:f.dist?.2:.9}).bindTooltip(f.n||f.s,{direction:'top',className:'tgt-tip'}).on('click',e=>tPop(e,f)).addTo(T.cityLayer);T.marks.push({f,dot,lab:null,col})}
   for(const k of ['military','airfield'])if(t.cats[k])for(const f of allFeatures(k)){if(k==='military'&&!f.n)continue;let col=ownColor(ownerAt(f.p[1],f.p[0])),dot=L.circleMarker([f.p[1],f.p[0]],{radius:k==='airfield'?4.5:3.2,color:'#fff',weight:1,opacity:.9,fillColor:col,fillOpacity:1}).bindTooltip(f.n||f.s,{direction:'top',className:'tgt-tip'}).on('click',e=>tPop(e,f)).addTo(T.dotLayer);
    let lab=f.n?textLabel(f,col).addTo(T.labelLayer):null;T.marks.push({f,dot,lab,col})}
   if(t.cats.peak)for(const r of allRegions()){let d=T.data.get(r.id);if(d)d.features.filter(f=>f.k==='peak'&&f.n).slice(0,15).forEach(f=>peakMark(f).addTo(T.peakLayer))}}
@@ -884,7 +886,7 @@ function applyZoomVisibility(){if(!T.cityLayer)return;let z=map.getZoom(),on=(g,
  on(T.cityLayer,z>=POLY_MIN_ZOOM);on(T.dotLayer,z<POLY_MIN_ZOOM);on(T.labelLayer,z>=LABEL_MIN_ZOOM);on(T.peakLayer,z>=PEAK_MIN_ZOOM);
  if(!$('targetsPane').hidden&&!$('tStatus').classList.contains('err'))tStatus(zoomHint())}
 // After the front changes only recolour (coalesced to one pass per frame).
-function refreshTargetOwnership(){if(!T.geo.length&&!T.marks.length||T.ownQueued)return;T.ownQueued=true;requestAnimationFrame(()=>{T.ownQueued=false;for(const gl of T.geo)gl.setStyle(ft=>polyStyle(ft.properties));for(const x of T.marks){let col=ownColor(ownerAt(x.f.p[1],x.f.p[0]));if(col!==x.col){x.col=col;x.dot.setStyle({fillColor:col});let e=x.lab?.getElement()?.firstChild;if(e)e.style.color=labelColor(col)}}if(!$('targetsPane').hidden)renderTargetList()})}
+function refreshTargetOwnership(){if(!T.geo.length&&!T.marks.length||T.ownQueued)return;T.ownQueued=true;requestAnimationFrame(()=>{T.ownQueued=false;for(const gl of T.geo)gl.setStyle(ft=>polyStyle(ft.properties));for(const x of T.marks){let col=ownColor(ownerAt(x.f.p[1],x.f.p[0]));if(col!==x.col){x.col=col;x.dot.setStyle(x.f.k==='settlement'?{fillColor:col,color:labelColor(col)}:{fillColor:col});let e=x.lab?.getElement()?.firstChild;if(e)e.style.color=labelColor(col)}}if(!$('targetsPane').hidden)renderTargetList()})}
 const OSM_TYPE={w:'way',r:'relation',n:'node'};
 function targetPopup(f){let own=ownerAt(f.p[1],f.p[0]),d=el('div','tgt-pop');d.append(el('b',null,TCAT[f.k].icon+' '+(f.n||f.s)),el('div','muted',f.s+(f.pop?' · население '+f.pop.toLocaleString('ru-RU'):'')+(f.ele?' · '+Math.round(f.ele)+' м':'')));
  if(f.a)d.append(el('div','muted','Примерная территория: в OSM у поселения есть только точка.'));
@@ -895,7 +897,7 @@ function targetPopup(f){let own=ownerAt(f.p[1],f.p[0]),d=el('div','tgt-pop');d.a
  if(f.id&&OSM_TYPE[f.id[0]]){let a=el('a',null,'Открыть в OpenStreetMap ↗');a.href='https://www.openstreetmap.org/'+OSM_TYPE[f.id[0]]+'/'+f.id.slice(1);a.target='_blank';a.rel='noopener';d.append(a)}return d}
 function renderRegionsUI(){let box=$('tRegions');if(!box)return;box.replaceChildren();let regs=allRegions();if(!regs.length){box.append(el('div','muted','Приблизьте карту — провинции видимой области подгрузятся сами.'));return}
  for(const r of regs){if(r.auto&&!box.querySelector('.t-auto-head'))box.append(el('div','t-auto-head','Видимые на карте · автоматически'));let d=T.data.get(r.id),row=el('div','t-region'),busy=T.status.get(r.id)||(T.loading.has(r.id)?'⏳ загрузка…':''),err=T.errors.get(r.id);
-  let st=busy||(d?'✓ '+(d.counts?.settlement||0)+' пос. · '+(d.counts?.military||0)+' воен.'+(d.source==='live'?' · OSM':''):err?'✗ '+err:'…');
+  let st=busy||(d?'✓ '+(d.counts?.settlement||0)+' пос. · '+(d.counts?.district?d.counts.district+' р-нов · ':'')+(d.counts?.military||0)+' воен.'+(d.snapshot?' · на '+osmDateLabel(d.snapshot):d.source==='live'?' · OSM':''):err?'✗ '+err:'…');
   let re=el('button',null,'↻');re.title='Собрать данные провинции заново из OpenStreetMap';re.disabled=!!busy;re.onclick=async()=>{T.errors.delete(r.id);await fetchRegionData(r.id,true);renderRegionsUI();renderTargets()};
   let rm=el('button',null,'✕');rm.title=r.auto?'Скрыть эту провинцию':'Убрать из провинций фронта';rm.onclick=()=>{if(r.auto){T.auto.delete(r.id);T.autoBlock.add(r.id);renderRegionsUI();renderTargets();return}project.settings.frontRegions=frontRegions().filter(x=>x.id!==r.id);scheduleSave();loadTargets()};
   let lines=T.logs.get(r.id),lg=null;if(lines?.length){lg=el('button',null,'≡');lg.title='Журнал сборки';lg.classList.toggle('on',T.logOpen.has(r.id));lg.onclick=()=>{clearTimeout(T.logTimers.get(r.id));T.logOpen.has(r.id)?T.logOpen.delete(r.id):T.logOpen.add(r.id);renderRegionsUI()}}
@@ -904,7 +906,7 @@ function renderRegionsUI(){let box=$('tRegions');if(!box)return;box.replaceChild
 function capturedIn(delta){let out=[];if(!delta||isEmpty(delta))return out;let b=gbox(delta);for(const f of allFeatures()){if(f.k==='peak'&&!f.n)continue;if(f.p[0]<b[0]||f.p[0]>b[2]||f.p[1]<b[1]||f.p[1]>b[3])continue;if(inGeom(f.p,delta))out.push(f)}
  const rank={military:0,airfield:0,peak:2,settlement:1};let seen=new Set();return out.filter(f=>f.n&&!seen.has(f.n.toLowerCase())&&seen.add(f.n.toLowerCase())).sort((a,b)=>rank[a.k]-rank[b.k]||(b.pop||0)-(a.pop||0)).slice(0,12).map(f=>({n:f.n,k:f.k}))}
 function renderTargetList(){let box=$('tList'),sum=$('tSummary');if(!box||$('targetsPane').hidden)return;box.replaceChildren();sum.replaceChildren();if(!tset().show)return;
- let all=allFeatures().filter(f=>f.k!=='peak'),by={};for(const f of all){let own=ownerAt(f.p[1],f.p[0])||'neutral';(by[own]??={settlement:0,military:0,airfield:0})[f.k]++}
+ let all=allFeatures().filter(f=>f.k!=='peak'&&!f.dist),by={};for(const f of all){let own=ownerAt(f.p[1],f.p[0])||'neutral';(by[own]??={settlement:0,military:0,airfield:0})[f.k]++}
  for(const [own,c] of Object.entries(by)){let row=el('div','t-sum');row.style.borderLeftColor=own==='neutral'?'#9aa4b2':sideColor(own);row.append(el('b',null,own==='neutral'?'Нейтральные':sideName(own)),el('span',null,'🏘 '+c.settlement+'  🪖 '+c.military+'  ✈️ '+c.airfield));sum.append(row)}
  let q=$('tFilter').value.trim().toLowerCase(),list=allFeatures().filter(f=>f.n&&(!q||f.n.toLowerCase().includes(q)||(f.q||'').includes(q))&&(q||f.k!=='settlement')).sort((a,b)=>a.k.localeCompare(b.k)||a.n.localeCompare(b.n,'ru')).slice(0,150);
  if(!list.length){box.append(el('div','muted',q?'Ничего не найдено.':'Введите название поселения для поиска.'));return}
@@ -1069,15 +1071,63 @@ const OSM_PLACE = { city: 'Город', town: 'Город', village: 'Посёл
 const OSM_MIL = { base: 'Военная база', barracks: 'Казармы', airfield: 'Военный аэродром', naval_base: 'Военно-морская база',
   training_area: 'Полигон', range: 'Стрельбище', danger_area: 'Опасная зона', checkpoint: 'Блокпост', bunker: 'Бункер', office: 'Военное учреждение' };
 
+// Areas where current OSM data is not usable for the map and an older snapshot is used instead.
+// Gaza Strip: since 2023 editors delete or retag destroyed towns (Rafah became landuse=brownfield,
+// municipal boundaries of Beit Hanoun, Abasan, Khuza'a disappear), so the Strip and its governorates
+// (wiki.openstreetmap.org/wiki/Gaza_Strip/Region) are built from OSM as of the end of 2021.
+// districts: also city districts (admin_level=10), refugee camps and quarters (place=suburb…), and
+// villages inside a town's municipality, as point or outline "districts" (f.dist).
+// ru: Russian names for places OSM names only in Arabic/English/Hebrew (keys: any OSM name, lowercase).
+const OSM_SNAPSHOTS = [
+  { name: 'Сектор Газа', date: '2021-12-31T00:00:00Z', districts: true, bbox: [34.2, 31.2, 34.58, 31.6],
+    ids: [1473938, 4731200, 3935814, 4731198, 4731199, 4731201],
+    ru: {
+      'bani suheila': 'Бани-Сухейла', 'abasan al-kabira': 'Абасан-эль-Кабира', "'abasan al-saghira": 'Абасан-эс-Сагира',
+      'abasan al-saghira': 'Абасан-эс-Сагира', "khuza'a": 'Хузаа', 'al-qarara': 'Эль-Карара', 'nuseirat': 'Нусейрат',
+      'bureij': 'Эль-Бурейдж', 'al-maghazi': 'Эль-Магази', 'al maghazi': 'Эль-Магази', 'a-zawayda': 'Эз-Завайда',
+      'az-zawayda': 'Эз-Завайда', 'wadi a-salqa': 'Вади-эс-Салка', 'al-musaddar': 'Эль-Мусаддар', 'juhor a-dik': 'Джухор-эд-Дик',
+      'al-mughraqa': 'Эль-Муграка', 'a-zahra': 'Эз-Захра', 'al-zahra': 'Эз-Захра', 'az-zahra': 'Эз-Захра',
+      'um a-nasser': 'Умм-эн-Наср', 'al-nasr': 'Эн-Наср', 'shokat a-sufi': 'Шокат-эс-Суфи', 'al-fukhari': 'Эль-Фухари',
+      // Gaza City districts; Shuja'iyya is split into the al-Jadida and Turkman quarters
+      'zeitun': 'Зейтун', 'tuffah': 'Туффах', 'ejdaida': 'Шуджаия (Эль-Джадида)', 'east ejdaida': 'Шуджаия (Восточная Джадида)',
+      'تركمان': 'Шуджаия (Туркман)', 'east turkman': 'Шуджаия (Восточный Туркман)', 'old city': 'Старый город',
+      'tal al hawa': 'Тель-эль-Хава', 'sabra': 'Сабра', 'daraj': 'Эд-Дарадж', 'south remal': 'Южный Рималь',
+      'north remal': 'Северный Рималь', 'awda city': 'Мадинат-эль-Авда', 'sheikh radwan': 'Шейх-Радван',
+      'sheikh redwan': 'Шейх-Радван', 'al nasser': 'Эн-Наср (Газа)', 'sheikh ejilin': 'Шейх-Иджлин',
+      // refugee camps and quarters
+      'beach camp': 'Лагерь Шати', 'ash-shati refugee camp': 'Лагерь Шати', 'jabalia camp': 'Лагерь Джабалия',
+      'bureij refugee camp': 'Лагерь Эль-Бурейдж', 'deir al-balah refugee camp': 'Лагерь Дейр-эль-Балах',
+      'rafah refugee camp': 'Лагерь Рафах', 'brazil refugee camp': 'Лагерь Бразилия', 'tall as-sultan': 'Тель-эс-Султан',
+      'saknat az zarqa': 'Сакнат-эз-Зарка', 'as salam': 'Эс-Салам', 'block o': 'Блок O', 'block k': 'Блок K', 'block j': 'Блок J',
+      'barahmey block': 'Блок Барахме', 'hamad town': 'Хамад', 'حي الشيخ ناصر': 'Шейх-Насер',
+      'the swedish village': 'Шведская деревня', 'sudia village': 'Саудовский квартал', 'al nada': 'Эн-Нада',
+    } },
+];
+// The snapshot area a province belongs to: by relation id, or when the province lies inside it.
+function osmAreaFor(id, bbox) {
+  for (const a of OSM_SNAPSHOTS) {
+    if (a.ids.includes(+id)) return a;
+    if (bbox && bbox[0] >= a.bbox[0] && bbox[1] >= a.bbox[1] && bbox[2] <= a.bbox[2] && bbox[3] <= a.bbox[3]) return a;
+  }
+  return null;
+}
+const osmDateFor = (id, bbox) => osmAreaFor(id, bbox)?.date || null;
+const osmDateLabel = d => d ? d.slice(8, 10) + '.' + d.slice(5, 7) + '.' + d.slice(0, 4) : '';
+
 // Overpass queries for a bounding box "south,west,north,east". Bounding boxes (not map_to_area):
 // area queries silently return nothing on mirrors without an areas database.
-function osmQueries(bb) {
+// date: ISO timestamp for an attic query (OSM as it was at that moment), null for current data;
+// districts: also city districts, camps and quarters.
+function osmQueries(bb, { date = null, districts = false } = {}) {
+  const at = date ? `[date:"${date}"]` : '';
+  const objects = `way["place"~"^(city|town|village|hamlet)$"](${bb});rel["place"~"^(city|town|village|hamlet)$"](${bb});rel["boundary"="administrative"]["admin_level"~"^(8|9${districts ? '|10' : ''})$"](${bb});way["landuse"="military"](${bb});rel["landuse"="military"](${bb});way["military"](${bb});rel["military"](${bb});way["aeroway"="aerodrome"](${bb});rel["aeroway"="aerodrome"](${bb});way["landuse"="brownfield"]["name"](${bb});rel["landuse"="brownfield"]["name"](${bb});`;
+  const nodes = `node["place"~"^(city|town|village|hamlet${districts ? '|suburb|quarter|neighbourhood' : ''})$"](${bb});node["natural"~"^(peak|volcano)$"]["name"](${bb});node["historic"="ruins"]["abandoned"="yes"]["name"](${bb});`;
   return {
-    objects: `[out:json][timeout:600];(way["place"~"^(city|town|village|hamlet)$"](${bb});rel["place"~"^(city|town|village|hamlet)$"](${bb});rel["boundary"="administrative"]["admin_level"~"^(8|9)$"](${bb});way["landuse"="military"](${bb});rel["landuse"="military"](${bb});way["military"](${bb});rel["military"](${bb});way["aeroway"="aerodrome"](${bb});rel["aeroway"="aerodrome"](${bb});way["landuse"="brownfield"]["name"](${bb});rel["landuse"="brownfield"]["name"](${bb}););out geom;`,
-    nodes: `[out:json][timeout:300];(node["place"~"^(city|town|village|hamlet)$"](${bb});node["natural"~"^(peak|volcano)$"]["name"](${bb});node["historic"="ruins"]["abandoned"="yes"]["name"](${bb}););out;`,
-    residential: `[out:json][timeout:600];(way["landuse"="residential"](${bb});rel["landuse"="residential"](${bb}););out geom;`,
+    objects: `[out:json][timeout:600]${at};(${objects});out geom;`,
+    nodes: `[out:json][timeout:300]${at};(${nodes});out;`,
+    residential: `[out:json][timeout:600]${at};(way["landuse"="residential"](${bb});rel["landuse"="residential"](${bb}););out geom;`,
     // objects + nodes in a single request (one Overpass slot instead of two); split with osmSplit()
-    main: `[out:json][timeout:600];(way["place"~"^(city|town|village|hamlet)$"](${bb});rel["place"~"^(city|town|village|hamlet)$"](${bb});rel["boundary"="administrative"]["admin_level"~"^(8|9)$"](${bb});way["landuse"="military"](${bb});rel["landuse"="military"](${bb});way["military"](${bb});rel["military"](${bb});way["aeroway"="aerodrome"](${bb});rel["aeroway"="aerodrome"](${bb});way["landuse"="brownfield"]["name"](${bb});rel["landuse"="brownfield"]["name"](${bb});node["place"~"^(city|town|village|hamlet)$"](${bb});node["natural"~"^(peak|volcano)$"]["name"](${bb});node["historic"="ruins"]["abandoned"="yes"]["name"](${bb}););out geom;`,
+    main: `[out:json][timeout:600]${at};(${objects}${nodes});out geom;`,
   };
 }
 function osmSplit(all) {
@@ -1139,8 +1189,11 @@ function osmElementGeometry(turf, el) {
   }
   try { return osmCleanPolys(turf, polys, OSM_SIMPLIFY); } catch { return null; }
 }
+const OSM_CAMP = /camp|مخيم|مخيّم|معسكر|מחנה/i;
+const osmDistrictKind = t => OSM_CAMP.test(osmNamesOf(t) + '|' + (t['name:fr'] || '')) ? 'Лагерь беженцев' : 'Район';
 function osmClassify(t) {
-  if (t.boundary === 'administrative') return { k: 'settlement', s: 'Муниципалитет' };
+  if (t.boundary === 'administrative')
+    return t.admin_level === '10' ? { k: 'settlement', s: osmDistrictKind(t), district: true } : { k: 'settlement', s: 'Муниципалитет' };
   if (t.place && OSM_PLACE[t.place]) return { k: 'settlement', s: OSM_PLACE[t.place] };
   if (t.aeroway === 'aerodrome') return { k: 'airfield', s: t['aerodrome:type'] === 'military' || t.military ? 'Военный аэродром' : 'Аэродром' };
   if (t.military === 'airfield') return { k: 'airfield', s: 'Военный аэродром' };
@@ -1154,7 +1207,15 @@ const OSM_RUIN = 'Разрушенный населённый пункт';
 const osmIsRuin = t => !!t && t.historic === 'ruins' && t.abandoned === 'yes' && !t.place && !t['abandoned:place'] && !!t.name;
 
 // Raw Overpass answers + the province boundary → features and counts.
-function osmBuildFeatures(turf, { boundary, objects, nodes, residential }) {
+// area: the snapshot area (osmAreaFor) — Russian names and districts.
+function osmBuildFeatures(turf, { boundary, objects, nodes, residential, area = null }) {
+  const ru = t => {
+    if (!area?.ru || !t) return null;
+    for (const k of ['name:en', 'name', 'name:fr', 'alt_name', 'name:ar']) { const v = t[k] && area.ru[String(t[k]).toLowerCase()]; if (v) return v; }
+    return null;
+  };
+  const nameOf = t => ru(t) || osmNameOf(t);
+  const namesOf = t => { const r = ru(t); return r ? [...new Set([r.toLowerCase(), ...osmNamesOf(t).split('|')])].join('|') : osmNamesOf(t); };
   const regionF = turf.feature(boundary);
   const inRegion = c => { try { return turf.booleanPointInPolygon(c, regionF); } catch { return false; } };
   const features = [];
@@ -1165,9 +1226,10 @@ function osmBuildFeatures(turf, { boundary, objects, nodes, residential }) {
     if (!g) continue;
     let p; try { p = turf.pointOnFeature(turf.feature(g)).geometry.coordinates; } catch { continue; }
     if (!inRegion(p)) continue;
-    const f = { k: c.k, n: osmNameOf(t), q: osmNamesOf(t), s: c.s, p: osmRound(p), g, id: el.type[0] + el.id };
+    const f = { k: c.k, n: nameOf(t), q: namesOf(t), s: c.s, p: osmRound(p), g, id: el.type[0] + el.id };
     if (t.population) f.pop = +String(t.population).replace(/\D/g, '') || undefined;
-    if (t.boundary === 'administrative') f.adm = 1;
+    if (c.district) f.dist = 1;
+    else if (t.boundary === 'administrative') f.adm = 1;
     if (c.brownfield) f.bf = 1;
     features.push(f);
   }
@@ -1182,16 +1244,29 @@ function osmBuildFeatures(turf, { boundary, objects, nodes, residential }) {
     // that contain a ruined town of the same name; small named lots (single buildings) are dropped
     if (!town && turf.area(turf.feature(f.g)) < 1e6) { features.splice(i, 1); continue; }
     delete f.bf; f.ruin = 1;
-    if (town) { f.n = osmNameOf(town.tags); f.q = [...new Set([...names, ...osmNamesOf(town.tags).split('|')])].join('|'); }
+    if (town) { f.n = nameOf(town.tags); f.q = [...new Set([...names, ...namesOf(town.tags).split('|')])].join('|'); }
   }
   // Regional councils (one municipal polygon spanning many villages) are not settlements themselves.
-  const settlements = features.filter(f => f.k === 'settlement');
+  // A town's own municipality is kept even with small places inside it (Rafah contains the Swedish and
+  // Saudi villages; snapshot areas): a city, town or village of the same name lies within it. That place point also
+  // gives the territory its Russian name and population.
+  const settlements = features.filter(f => f.k === 'settlement' && !f.dist);
+  const placeEls = (nodes.elements || []).filter(e => e.type === 'node' && OSM_PLACE[e.tags?.place]);
+  const ownTown = f => {
+    const names = new Set((f.q || '').split('|').filter(Boolean));
+    return placeEls.find(e => namesOf(e.tags).split('|').some(n => names.has(n)) && inF([e.lon, e.lat], f));
+  };
   for (let i = features.length - 1; i >= 0; i--) {
     const f = features[i];
     if (!f.adm) continue;
     let inside = 0;
     for (const o of settlements) if (o !== f && inF(o.p, f) && ++inside >= 2) break;
-    if (inside >= 2) features.splice(i, 1);
+    const town = ownTown(f);
+    if (inside >= 2 && !(town && area?.districts)) { features.splice(i, 1); continue; }
+    if (!town) continue;
+    if (/[а-яё]/i.test(nameOf(town.tags)) && !/[а-яё]/i.test(f.n)) f.n = nameOf(town.tags);
+    f.q = [...new Set([...(f.q || '').split('|'), ...namesOf(town.tags).split('|')].filter(Boolean))].join('|');
+    if (!f.pop && town.tags.population) f.pop = +String(town.tags.population).replace(/\D/g, '') || undefined;
   }
   // Huge "military" areas containing villages (historic security zones, district-wide danger areas) are not bases.
   for (let i = features.length - 1; i >= 0; i--) {
@@ -1203,12 +1278,14 @@ function osmBuildFeatures(turf, { boundary, objects, nodes, residential }) {
     if (km2 > 100 || inside >= 3) features.splice(i, 1);
   }
   // A built-up outline inside a municipal territory is the same settlement (names often differ only by language).
+  // With districts, a differently named place inside a town (Rafah's Swedish village) stays as its district.
   const municipal = features.filter(f => f.adm), cyr = /[а-яё]/i;
   for (let i = features.length - 1; i >= 0; i--) {
     const f = features[i];
-    if (f.k !== 'settlement' || f.adm) continue;
+    if (f.k !== 'settlement' || f.adm || f.dist) continue;
     const m = municipal.find(m => inF(f.p, m));
     if (!m) continue;
+    if (area?.districts && !(f.q || '').split('|').some(n => n && (m.q || '').split('|').includes(n))) { f.dist = 1; continue; }
     if (cyr.test(f.n) && !cyr.test(m.n)) m.n = f.n;
     m.q = [...new Set([...(m.q || '').split('|'), ...(f.q || '').split('|')].filter(Boolean))].join('|');
     features.splice(i, 1);
@@ -1216,7 +1293,7 @@ function osmBuildFeatures(turf, { boundary, objects, nodes, residential }) {
   // Villages mapped only as a point get their real built-up area: residential landuse polygons (traced
   // from imagery) are attributed to the nearest such village within 2 km and merged. Nothing is
   // synthesised — a village without any mapped polygon stays a named point.
-  const real = features.filter(f => f.k === 'settlement');
+  const real = features.filter(f => f.k === 'settlement' && !f.dist);
   const boxes = new Map(real.map(f => [f, turf.bbox(turf.feature(f.g))]));
   const inReal = c => real.some(f => { const b = boxes.get(f); return c[0] >= b[0] && c[0] <= b[2] && c[1] >= b[1] && c[1] <= b[3] && inF(c, f); });
   const nodeEls = (nodes.elements || []).filter(e => e.type === 'node' && inRegion([e.lon, e.lat]));
@@ -1233,7 +1310,7 @@ function osmBuildFeatures(turf, { boundary, objects, nodes, residential }) {
     groups.get(best.id).push(g);
   }
   for (const e of placeNodes) {
-    const f = { k: 'settlement', n: osmNameOf(e.tags), q: osmNamesOf(e.tags), s: OSM_PLACE[e.tags.place] || OSM_RUIN, p: osmRound([e.lon, e.lat]), id: 'n' + e.id };
+    const f = { k: 'settlement', n: nameOf(e.tags), q: namesOf(e.tags), s: OSM_PLACE[e.tags.place] || OSM_RUIN, p: osmRound([e.lon, e.lat]), id: 'n' + e.id };
     if (!OSM_PLACE[e.tags.place]) f.ruin = 1;
     if (e.tags.population) f.pop = +String(e.tags.population).replace(/\D/g, '') || undefined;
     const parts = groups.get(e.id);
@@ -1248,13 +1325,28 @@ function osmBuildFeatures(turf, { boundary, objects, nodes, residential }) {
     if (!f.g) f.pt = 1;
     features.push(f);
   }
+  // Districts (snapshot areas): quarters and refugee camps mapped as points, and villages inside a town's
+  // municipality, become point districts; a place already outlined under the same name is skipped.
+  if (area?.districts) {
+    const outlined = features.filter(f => f.k === 'settlement' && f.g);
+    for (const e of nodeEls) {
+      const t = e.tags || {}, c = [e.lon, e.lat];
+      const quarter = /^(suburb|quarter|neighbourhood)$/.test(t.place || '');
+      if (!t.name || !(quarter || (OSM_PLACE[t.place] && inReal(c)))) continue;
+      const names = new Set(namesOf(t).split('|'));
+      // same name and inside the outline or next to it (points are often placed just off the polygon)
+      if (outlined.some(f => (f.q || '').split('|').some(n => names.has(n)) && (inF(c, f) || turf.distance(c, f.p) < 1.5))) continue;
+      if (features.some(f => f.dist && f.pt && f.n === nameOf(t))) continue;
+      features.push({ k: 'settlement', n: nameOf(t), q: namesOf(t), s: quarter ? osmDistrictKind(t) : OSM_PLACE[t.place], p: osmRound(c), id: 'n' + e.id, dist: 1, pt: 1 });
+    }
+  }
   // Named peaks (points), highest first.
   features.push(...nodeEls.filter(e => /^(peak|volcano)$/.test(e.tags?.natural || ''))
-    .map(e => ({ k: 'peak', n: osmNameOf(e.tags), q: osmNamesOf(e.tags), s: e.tags.natural === 'volcano' ? 'Вулкан' : 'Высота', p: osmRound([e.lon, e.lat]), ele: parseFloat(e.tags.ele) || null, id: 'n' + e.id }))
+    .map(e => ({ k: 'peak', n: nameOf(e.tags), q: namesOf(e.tags), s: e.tags.natural === 'volcano' ? 'Вулкан' : 'Высота', p: osmRound([e.lon, e.lat]), ele: parseFloat(e.tags.ele) || null, id: 'n' + e.id }))
     .sort((a, b) => (b.ele || 0) - (a.ele || 0)).slice(0, 80));
   const counts = {};
-  for (const f of features) counts[f.k] = (counts[f.k] || 0) + 1;
-  counts.approx = features.filter(f => f.pt).length;
+  for (const f of features) { const k = f.dist ? 'district' : f.k; counts[k] = (counts[k] || 0) + 1; }
+  counts.approx = features.filter(f => f.pt && !f.dist).length;
   counts.builtup = features.filter(f => f.b).length;
   counts.ruins = features.filter(f => f.ruin).length;
   return { features, counts };
@@ -1296,14 +1388,15 @@ async function buildRegionLive(r,log){
  let done=log.step('Граница провинции');
  let lk=await nominatimJSON(NOMINATIM+'/lookup?format=jsonv2&polygon_geojson=1&polygon_threshold=0.0002&accept-language=ru&osm_ids=R'+r.id),hit=lk.find(x=>['Polygon','MultiPolygon'].includes(x.geojson?.type));
  if(!hit){done('нет границы в OSM','err');throw Error('у провинции нет границы в OSM')}
- let boundary=geo(polygonClipping.union(pc(hit.geojson))),b=turf.bbox(feature(boundary)),q=osmQueries([b[1],b[0],b[3],b[2]].map(v=>v.toFixed(5)).join(','));done(fmtArea(area(boundary))+', Nominatim');
+ let boundary=geo(polygonClipping.union(pc(hit.geojson))),b=turf.bbox(feature(boundary)),zone=osmAreaFor(r.id,b),date=zone?.date||null,q=osmQueries([b[1],b[0],b[3],b[2]].map(v=>v.toFixed(5)).join(','),{date,districts:!!zone?.districts});done(fmtArea(area(boundary))+', Nominatim');
+ if(date)log.info(zone.name+': беру данные OSM на '+osmDateLabel(date)+' — в текущей карте разрушенные города удалены или переразмечены');
  done=log.step('Поселения, базы, аэродромы, деревни, высоты');let all=await overpassJSON(q.main,{log}).catch(e=>{done('нет ответа','err');throw e}),{objects,nodes}=osmSplit(all);done(fmtN(objects.elements.length,'объект','объекта','объектов')+' и '+fmtN(nodes.elements.length,'точка','точки','точек')+', '+all.host);
  if(osmLooksBroken(objects,nodes)){log.error('Сервер вернул пустой ответ по объектам — повторите сборку');throw Error('пустой ответ сервера')}
  done=log.step('Жилая застройка');let residential;try{residential=await overpassJSON(q.residential,{timeout:90000,attempts:2,mirrors:1,log});done(fmtN(residential.elements.length,'участок','участка','участков')+', '+residential.host)}catch(e){residential={elements:[]};done('пропущена — сервер не ответил; деревни без контура будут точками','warn')}
  done=log.step('Обработка');await new Promise(res=>setTimeout(res,40));
- let {features,counts}=osmBuildFeatures(turf,{boundary,objects,nodes,residential}),simple=turf.simplify(feature(boundary),{tolerance:.0003,highQuality:false}).geometry;
- done(fmtN(counts.settlement,'поселение','поселения','поселений')+' ('+fmtN(counts.builtup)+' по застройке, '+fmtN(counts.approx)+' точками), '+fmtN(counts.military,'военный объект','военных объекта','военных объектов')+', '+fmtN(counts.airfield,'аэродром','аэродрома','аэродромов')+', '+fmtN(counts.peak,'высота','высоты','высот'));
- return {id:r.id,name:hit.name||r.name,updated:new Date().toISOString(),bbox:b.map(v=>Math.round(v*1e4)/1e4),boundary:simple,counts,features,source:'live'}}
+ let {features,counts}=osmBuildFeatures(turf,{boundary,objects,nodes,residential,area:zone}),simple=turf.simplify(feature(boundary),{tolerance:.0003,highQuality:false}).geometry;
+ done(fmtN(counts.settlement,'поселение','поселения','поселений')+' ('+fmtN(counts.builtup)+' по застройке, '+fmtN(counts.approx)+' точками), '+(counts.district?fmtN(counts.district,'район','района','районов')+' и лагерей, ':'')+fmtN(counts.military,'военный объект','военных объекта','военных объектов')+', '+fmtN(counts.airfield,'аэродром','аэродрома','аэродромов')+', '+fmtN(counts.peak,'высота','высоты','высот'));
+ return {id:r.id,name:hit.name||r.name,updated:new Date().toISOString(),...(date?{snapshot:date}:{}),bbox:b.map(v=>Math.round(v*1e4)/1e4),boundary:simple,counts,features,source:'live'}}
 // One live build at a time — public OSM servers are shared.
 let liveQueue=Promise.resolve();
 function liveBuild(r){let job=liveQueue.then(async()=>{let log=regionLog(r.id),t0=performance.now();T.status.set(r.id,'⏳ в очереди');log.info('Данных нет в репозитории и в браузере — собираю из OpenStreetMap');
