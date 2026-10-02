@@ -48,12 +48,14 @@
     33.3356
    ],
    "counts": {
-    "settlement": 448,
+    "settlement": 452,
+    "military": 207,
+    "airfield": 3,
     "peak": 80,
-    "approx": 448
+    "approx": 14
    },
-   "updated": "2026-10-02T02:56:47.096Z"
+   "updated": "2026-10-02T02:49:11.357Z"
   }
  ],
- "updated": "2026-10-02T02:56:47.096Z"
+ "updated": "2026-10-02T02:51:35.514Z"
 }
