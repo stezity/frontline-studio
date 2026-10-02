@@ -1,0 +1,12 @@
+{
+  "name": "frontline-studio",
+  "private": true,
+  "type": "module",
+  "description": "Frontline Studio — редактор линии фронта + данные OSM по провинциям",
+  "scripts": {
+    "build-data": "node scripts/build-data.mjs"
+  },
+  "dependencies": {
+    "@turf/turf": "^7.2.0"
+  }
+}
