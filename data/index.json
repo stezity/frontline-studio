@@ -1,6 +1,111 @@
 {
  "regions": [
   {
+   "id": 3935814,
+   "name": "провинция Газа",
+   "file": "regions/3935814.json",
+   "bbox": [
+    34.3732,
+    31.4272,
+    34.5181,
+    31.5487
+   ],
+   "counts": {
+    "military": 3,
+    "district": 19,
+    "settlement": 4,
+    "approx": 0,
+    "builtup": 0,
+    "ruins": 0
+   },
+   "updated": "2026-10-02T06:03:27.218Z",
+   "snapshot": "2021-12-31T00:00:00Z"
+  },
+  {
+   "id": 4731198,
+   "name": "провинция Дейр-эль-Балах",
+   "file": "regions/4731198.json",
+   "bbox": [
+    34.3083,
+    31.3737,
+    34.4267,
+    31.4663
+   ],
+   "counts": {
+    "settlement": 7,
+    "district": 3,
+    "peak": 1,
+    "approx": 0,
+    "builtup": 0,
+    "ruins": 0
+   },
+   "updated": "2026-10-02T06:38:35.966Z",
+   "snapshot": "2021-12-31T00:00:00Z"
+  },
+  {
+   "id": 4731201,
+   "name": "провинция Рафах",
+   "file": "regions/4731201.json",
+   "bbox": [
+    34.2159,
+    31.2201,
+    34.3294,
+    31.3458
+   ],
+   "counts": {
+    "district": 11,
+    "military": 1,
+    "airfield": 1,
+    "settlement": 3,
+    "approx": 0,
+    "builtup": 0,
+    "ruins": 0
+   },
+   "updated": "2026-10-02T06:44:34.784Z",
+   "snapshot": "2021-12-31T00:00:00Z"
+  },
+  {
+   "id": 4731200,
+   "name": "провинция Северная Газа",
+   "file": "regions/4731200.json",
+   "bbox": [
+    34.4511,
+    31.5017,
+    34.5673,
+    31.5969
+   ],
+   "counts": {
+    "military": 2,
+    "settlement": 4,
+    "district": 1,
+    "approx": 0,
+    "builtup": 0,
+    "ruins": 0
+   },
+   "updated": "2026-10-02T06:31:30.631Z",
+   "snapshot": "2021-12-31T00:00:00Z"
+  },
+  {
+   "id": 4731199,
+   "name": "провинция Хан-Юнис",
+   "file": "regions/4731199.json",
+   "bbox": [
+    34.2398,
+    31.2603,
+    34.3733,
+    31.4043
+   ],
+   "counts": {
+    "settlement": 7,
+    "district": 2,
+    "approx": 0,
+    "builtup": 0,
+    "ruins": 0
+   },
+   "updated": "2026-10-02T06:41:45.663Z",
+   "snapshot": "2021-12-31T00:00:00Z"
+  },
+  {
    "id": 318309,
    "name": "провинция Эн-Набатия",
    "file": "regions/318309.json",
@@ -60,7 +165,7 @@
     "builtup": 5,
     "ruins": 2
    },
-   "updated": "2026-10-02T04:34:07.972Z"
+   "updated": "2026-10-02T06:07:07.928Z"
   },
   {
    "id": 1473938,
@@ -74,13 +179,16 @@
    ],
    "counts": {
     "military": 6,
-    "settlement": 15,
+    "district": 36,
+    "airfield": 1,
+    "settlement": 25,
     "peak": 1,
     "approx": 0,
     "builtup": 0,
-    "ruins": 1
+    "ruins": 0
    },
-   "updated": "2026-10-02T04:45:37.101Z"
+   "updated": "2026-10-02T05:55:30.374Z",
+   "snapshot": "2021-12-31T00:00:00Z"
   },
   {
    "id": 1473952,
@@ -101,8 +209,8 @@
     "builtup": 57,
     "ruins": 1
    },
-   "updated": "2026-10-02T04:52:14.901Z"
+   "updated": "2026-10-02T06:24:43.721Z"
   }
  ],
- "updated": "2026-10-02T04:52:14.901Z"
+ "updated": "2026-10-02T06:44:34.784Z"
 }
