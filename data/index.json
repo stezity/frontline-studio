@@ -14,10 +14,11 @@
     "military": 43,
     "settlement": 164,
     "peak": 17,
-    "approx": 13,
-    "builtup": 149
+    "approx": 14,
+    "builtup": 148,
+    "ruins": 0
    },
-   "updated": "2026-10-02T04:03:50.923Z"
+   "updated": "2026-10-02T04:41:29.156Z"
   },
   {
    "id": 318236,
@@ -35,9 +36,10 @@
     "settlement": 229,
     "peak": 10,
     "approx": 12,
-    "builtup": 214
+    "builtup": 214,
+    "ruins": 0
    },
-   "updated": "2026-10-02T03:59:41.134Z"
+   "updated": "2026-10-02T04:35:11.398Z"
   },
   {
    "id": 1375620,
@@ -50,14 +52,15 @@
     33.3356
    ],
    "counts": {
-    "settlement": 452,
+    "settlement": 454,
     "military": 207,
     "airfield": 3,
     "peak": 80,
-    "approx": 9,
-    "builtup": 5
+    "approx": 11,
+    "builtup": 5,
+    "ruins": 2
    },
-   "updated": "2026-10-02T03:59:20.430Z"
+   "updated": "2026-10-02T04:34:07.972Z"
   },
   {
    "id": 1473938,
@@ -71,12 +74,13 @@
    ],
    "counts": {
     "military": 6,
-    "settlement": 14,
+    "settlement": 15,
     "peak": 1,
     "approx": 0,
-    "builtup": 0
+    "builtup": 0,
+    "ruins": 1
    },
-   "updated": "2026-10-02T03:53:53.202Z"
+   "updated": "2026-10-02T04:45:37.101Z"
   },
   {
    "id": 1473952,
@@ -93,11 +97,12 @@
     "airfield": 11,
     "military": 449,
     "peak": 80,
-    "approx": 18,
-    "builtup": 58
+    "approx": 19,
+    "builtup": 57,
+    "ruins": 1
    },
-   "updated": "2026-10-02T04:08:33.280Z"
+   "updated": "2026-10-02T04:52:14.901Z"
   }
  ],
- "updated": "2026-10-02T04:08:33.280Z"
+ "updated": "2026-10-02T04:52:14.901Z"
 }
