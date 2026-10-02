@@ -244,7 +244,14 @@ async function buildRegion(id) {
     boundary: { type: region.simple.type, coordinates: region.simple.coordinates },
     counts, features,
   };
-  await fs.writeFile(path.join(ROOT, 'data', 'regions', `${id}.json`), JSON.stringify(out));
+  // Keep the previous file (and its timestamp) when nothing changed, so scheduled runs do not commit noise.
+  const file = path.join(ROOT, 'data', 'regions', `${id}.json`);
+  try {
+    const prev = JSON.parse(await fs.readFile(file, 'utf8'));
+    const strip = d => JSON.stringify({ ...d, updated: undefined });
+    if (strip(prev) === strip(out)) out.updated = prev.updated;
+  } catch {}
+  await fs.writeFile(file, JSON.stringify(out));
   console.log(`  ✓ ${region.name}:`, JSON.stringify(counts));
   return { id, name: region.name, file: `regions/${id}.json`, bbox: out.bbox, counts, updated: out.updated };
 }
@@ -268,7 +275,7 @@ for (const r of config.regions) {
 // Drop regions removed from regions.json.
 const wanted = new Set(config.regions.map(r => r.id));
 index.regions = index.regions.filter(x => wanted.has(x.id)).sort((a, b) => a.name.localeCompare(b.name, 'ru'));
-index.updated = new Date().toISOString();
+index.updated = index.regions.reduce((m, r) => (r.updated > m ? r.updated : m), '');
 await fs.writeFile(indexPath, JSON.stringify(index, null, 1));
 console.log(`Done: ${index.regions.length} regions, ${failed} failed.`);
 if (failed) process.exitCode = 1;
