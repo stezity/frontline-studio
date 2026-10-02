@@ -215,7 +215,7 @@ button:disabled{cursor:var(--cur-arrow)}input:not([type]),input[type=text],input
  button,select,input,label{touch-action:manipulation}
 }
 </style></head><body>
-<div id="map"></div><button id="exitView" hidden>← Вернуться к редактору</button><header class="panel top"><strong><span class="logo">◈</span> Frontline Studio <small class="version">v1.4.1</small></strong><div class="search"><input id="search" placeholder="Найти место и нажать Enter…" autocomplete="off"><button id="searchGo" title="Искать" aria-label="Искать">⌕</button><div id="results" class="results" hidden></div></div><button id="undo" title="Отменить (Ctrl+Z)">↶<span>Отменить</span></button><button id="redo" title="Вернуть (Ctrl+Y)">↷<span>Вернуть</span></button><button id="settingsBtn">⚙ Настройки</button></header>
+<div id="map"></div><button id="exitView" hidden>← Вернуться к редактору</button><header class="panel top"><strong><span class="logo">◈</span> Frontline Studio <small class="version">v1.4.2</small></strong><div class="search"><input id="search" placeholder="Найти место и нажать Enter…" autocomplete="off"><button id="searchGo" title="Искать" aria-label="Искать">⌕</button><div id="results" class="results" hidden></div></div><button id="undo" title="Отменить (Ctrl+Z)">↶<span>Отменить</span></button><button id="redo" title="Вернуть (Ctrl+Y)">↷<span>Вернуть</span></button><button id="settingsBtn">⚙ Настройки</button></header>
 <nav class="panel tools" id="tools"><button data-tool="view" title="Обзор (1)"><i class="ico">☛</i> <span>Обзор</span><kbd>1</kbd></button><button data-tool="front" title="Фронт (5)"><i class="ico">╱</i> <span>Фронт</span><kbd>5</kbd></button><button data-tool="attack" title="Наступление (2)"><i class="ico">⬡</i> <span>Наступление</span><kbd>2</kbd></button><button data-tool="pen" title="Перо — наступление по точкам (6)"><i class="ico">✒</i> <span>Перо</span><kbd>6</kbd></button><button data-tool="brush" title="Кисть (3)"><i class="ico">●</i> <span>Кисть</span><kbd>3</kbd></button><button data-tool="measure" title="Рулетка (4)"><i class="ico">⌁</i> <span>Рулетка</span><kbd>4</kbd></button><button id="initialQuickToggle" title="Независимая исходная линия"><i class="ico">╍</i> <span>Исходная</span></button><button id="mobileMenuBtn" class="m-only" title="Меню"><i class="ico">☰</i> <span>Меню</span></button></nav>
 <section class="panel sides"><small>Активная сторона</small><div><button id="side1" data-side="1"></button><button id="side2" data-side="2"></button></div><div id="additionalSideControls"></div><div class="side-tools"><button id="renameSide" title="Переименовать активную сторону (или двойной клик по стороне)">✎<span> Имя</span></button><button id="countryOpen" title="Построить фронт по границам двух стран или регионов">🌍<span> Страны</span></button><button id="turnToggle" title="Режим хода: копить несколько действий и выполнить их вместе">⏯<span> Ход</span></button></div></section>
 <section class="panel sliders"><label>Серая зона <b id="greyVal"></b><input id="grey" type="range" min="0" max="9" step="1"></label><label>Анимация <b id="durationVal"></b><input id="duration" type="range" min="1" max="60" step="1"></label><label>Кисть <b id="brushVal"></b><input id="brushSize" type="range" min="0" max="10" step="1"></label></section>
@@ -1059,10 +1059,16 @@ const OSM_MIL = { base: 'Военная база', barracks: 'Казармы', a
 // area queries silently return nothing on mirrors without an areas database.
 function osmQueries(bb) {
   return {
-    objects: `[out:json][timeout:600];(way["place"~"^(city|town|village|hamlet)$"](${bb});rel["place"~"^(city|town|village|hamlet)$"](${bb});rel["boundary"="administrative"]["admin_level"~"^(8|9)$"](${bb});way["landuse"="military"](${bb});rel["landuse"="military"](${bb});way["military"](${bb});rel["military"](${bb});way["aeroway"="aerodrome"](${bb});rel["aeroway"="aerodrome"](${bb}););out geom;`,
-    nodes: `[out:json][timeout:300];(node["place"~"^(city|town|village|hamlet)$"](${bb});node["natural"~"^(peak|volcano)$"]["name"](${bb}););out;`,
+    objects: `[out:json][timeout:600];(way["place"~"^(city|town|village|hamlet)$"](${bb});rel["place"~"^(city|town|village|hamlet)$"](${bb});rel["boundary"="administrative"]["admin_level"~"^(8|9)$"](${bb});way["landuse"="military"](${bb});rel["landuse"="military"](${bb});way["military"](${bb});rel["military"](${bb});way["aeroway"="aerodrome"](${bb});rel["aeroway"="aerodrome"](${bb});way["landuse"="brownfield"]["name"](${bb});rel["landuse"="brownfield"]["name"](${bb}););out geom;`,
+    nodes: `[out:json][timeout:300];(node["place"~"^(city|town|village|hamlet)$"](${bb});node["natural"~"^(peak|volcano)$"]["name"](${bb});node["historic"="ruins"]["abandoned"="yes"]["name"](${bb}););out;`,
     residential: `[out:json][timeout:600];(way["landuse"="residential"](${bb});rel["landuse"="residential"](${bb}););out geom;`,
+    // objects + nodes in a single request (one Overpass slot instead of two); split with osmSplit()
+    main: `[out:json][timeout:600];(way["place"~"^(city|town|village|hamlet)$"](${bb});rel["place"~"^(city|town|village|hamlet)$"](${bb});rel["boundary"="administrative"]["admin_level"~"^(8|9)$"](${bb});way["landuse"="military"](${bb});rel["landuse"="military"](${bb});way["military"](${bb});rel["military"](${bb});way["aeroway"="aerodrome"](${bb});rel["aeroway"="aerodrome"](${bb});way["landuse"="brownfield"]["name"](${bb});rel["landuse"="brownfield"]["name"](${bb});node["place"~"^(city|town|village|hamlet)$"](${bb});node["natural"~"^(peak|volcano)$"]["name"](${bb});node["historic"="ruins"]["abandoned"="yes"]["name"](${bb}););out geom;`,
   };
+}
+function osmSplit(all) {
+  const els = all.elements || [];
+  return { objects: { elements: els.filter(e => e.type !== 'node') }, nodes: { elements: els.filter(e => e.type === 'node') } };
 }
 
 const osmRound = c => [Math.round(c[0] * 1e5) / 1e5, Math.round(c[1] * 1e5) / 1e5];
@@ -1125,8 +1131,13 @@ function osmClassify(t) {
   if (t.aeroway === 'aerodrome') return { k: 'airfield', s: t['aerodrome:type'] === 'military' || t.military ? 'Военный аэродром' : 'Аэродром' };
   if (t.military === 'airfield') return { k: 'airfield', s: 'Военный аэродром' };
   if (t.landuse === 'military' || t.military) return { k: 'military', s: OSM_MIL[t.military] || 'Военная территория' };
+  if (t.landuse === 'brownfield' && t.name) return { k: 'settlement', s: OSM_RUIN, brownfield: true };
   return null;
 }
+// A destroyed town: OSM editors drop its place=* tag and mark the point as ruins. Historic abandonments
+// (villages of 1948, settlements evacuated in 2005) keep abandoned:place=* and are left out.
+const OSM_RUIN = 'Разрушенный населённый пункт';
+const osmIsRuin = t => !!t && t.historic === 'ruins' && t.abandoned === 'yes' && !t.place && !t['abandoned:place'] && !!t.name;
 
 // Raw Overpass answers + the province boundary → features and counts.
 function osmBuildFeatures(turf, { boundary, objects, nodes, residential }) {
@@ -1143,9 +1154,22 @@ function osmBuildFeatures(turf, { boundary, objects, nodes, residential }) {
     const f = { k: c.k, n: osmNameOf(t), q: osmNamesOf(t), s: c.s, p: osmRound(p), g, id: el.type[0] + el.id };
     if (t.population) f.pop = +String(t.population).replace(/\D/g, '') || undefined;
     if (t.boundary === 'administrative') f.adm = 1;
+    if (c.brownfield) f.bf = 1;
     features.push(f);
   }
   const inF = (c, f) => { try { return turf.booleanPointInPolygon(c, turf.feature(f.g)); } catch { return false; } };
+  const ruinNodes = (nodes.elements || []).filter(e => e.type === 'node' && osmIsRuin(e.tags));
+  for (let i = features.length - 1; i >= 0; i--) {
+    const f = features[i];
+    if (!f.bf) continue;
+    const names = new Set((f.q || '').split('|'));
+    const town = ruinNodes.find(e => inF([e.lon, e.lat], f) && osmNamesOf(e.tags).split('|').some(n => names.has(n)));
+    // destroyed towns are retagged as large named brownfields (Rafah, 2024): keep those, or smaller ones
+    // that contain a ruined town of the same name; small named lots (single buildings) are dropped
+    if (!town && turf.area(turf.feature(f.g)) < 1e6) { features.splice(i, 1); continue; }
+    delete f.bf; f.ruin = 1;
+    if (town) { f.n = osmNameOf(town.tags); f.q = [...new Set([...names, ...osmNamesOf(town.tags).split('|')])].join('|'); }
+  }
   // Regional councils (one municipal polygon spanning many villages) are not settlements themselves.
   const settlements = features.filter(f => f.k === 'settlement');
   for (let i = features.length - 1; i >= 0; i--) {
@@ -1182,7 +1206,7 @@ function osmBuildFeatures(turf, { boundary, objects, nodes, residential }) {
   const boxes = new Map(real.map(f => [f, turf.bbox(turf.feature(f.g))]));
   const inReal = c => real.some(f => { const b = boxes.get(f); return c[0] >= b[0] && c[0] <= b[2] && c[1] >= b[1] && c[1] <= b[3] && inF(c, f); });
   const nodeEls = (nodes.elements || []).filter(e => e.type === 'node' && inRegion([e.lon, e.lat]));
-  const placeNodes = nodeEls.filter(e => e.tags?.place && OSM_PLACE[e.tags.place] && !inReal([e.lon, e.lat]));
+  const placeNodes = nodeEls.filter(e => ((e.tags?.place && OSM_PLACE[e.tags.place]) || osmIsRuin(e.tags)) && !inReal([e.lon, e.lat]));
   const groups = new Map(placeNodes.map(e => [e.id, []]));
   for (const el of (residential?.elements || [])) {
     const g = osmElementGeometry(turf, el);
@@ -1195,7 +1219,8 @@ function osmBuildFeatures(turf, { boundary, objects, nodes, residential }) {
     groups.get(best.id).push(g);
   }
   for (const e of placeNodes) {
-    const f = { k: 'settlement', n: osmNameOf(e.tags), q: osmNamesOf(e.tags), s: OSM_PLACE[e.tags.place], p: osmRound([e.lon, e.lat]), id: 'n' + e.id };
+    const f = { k: 'settlement', n: osmNameOf(e.tags), q: osmNamesOf(e.tags), s: OSM_PLACE[e.tags.place] || OSM_RUIN, p: osmRound([e.lon, e.lat]), id: 'n' + e.id };
+    if (!OSM_PLACE[e.tags.place]) f.ruin = 1;
     if (e.tags.population) f.pop = +String(e.tags.population).replace(/\D/g, '') || undefined;
     const parts = groups.get(e.id);
     if (parts.length) {
@@ -1217,6 +1242,7 @@ function osmBuildFeatures(turf, { boundary, objects, nodes, residential }) {
   for (const f of features) counts[f.k] = (counts[f.k] || 0) + 1;
   counts.approx = features.filter(f => f.pt).length;
   counts.builtup = features.filter(f => f.b).length;
+  counts.ruins = features.filter(f => f.ruin).length;
   return { features, counts };
 }
 
@@ -1230,17 +1256,21 @@ function osmLooksBroken(objects, nodes) {
 // collects it from OpenStreetMap itself (Nominatim boundary + Overpass objects), processes it with the
 // same osm-core code as the GitHub build, and caches the result in IndexedDB. Every step is written to
 // a small log under the province row, which folds away a few seconds after a successful build.
-const OSM_OVERPASS=['https://overpass-api.de/api/interpreter','https://overpass.private.coffee/api/interpreter','https://maps.mail.ru/osm/tools/overpass/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
-const osmDown=new Map();
-async function overpassJSON(q,{timeout=120000,mirrors=OSM_OVERPASS.length,log,rounds=3}={}){let err;for(let round=0;round<rounds;round++){if(round){let wait=15*round;log?.warn('Все серверы OSM заняты — повтор через '+wait+' с (круг '+(round+1)+' из '+rounds+')');await new Promise(r=>setTimeout(r,wait*1000));osmDown.clear()}
- let now=Date.now(),urls=OSM_OVERPASS.filter(u=>!(osmDown.get(u)>now));if(!urls.length)urls=OSM_OVERPASS.slice();urls=urls.slice(0,mirrors);
- for(const url of urls){let host=url.split('/')[2],ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),timeout),fail=reason=>{err=Error(host+': '+reason);osmDown.set(url,Date.now()+120000);log?.warn(host+' — '+reason+', пробую другой сервер')};
-  try{let r=await fetch(url,{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:ctrl.signal});
-   if(!r.ok){fail('HTTP '+r.status);continue}let t=await r.text(),j=null;try{j=JSON.parse(t)}catch(e){}
-   if(!j||(j.remark&&/error|timed out/i.test(j.remark)&&!(j.elements||[]).length)){fail('сервер занят');continue}
-   let i=OSM_OVERPASS.indexOf(url);if(i>0){OSM_OVERPASS.splice(i,1);OSM_OVERPASS.unshift(url)}j.host=host;return j}
-  catch(e){fail(e.name==='AbortError'?'не ответил за '+Math.round(timeout/1000)+' с':'нет соединения')}finally{clearTimeout(timer)}}}
- throw err||Error('OpenStreetMap недоступен')}
+const OSM_PRIMARY='https://overpass-api.de/api/interpreter',OSM_MIRRORS=['https://overpass.private.coffee/api/interpreter','https://overpass.kumi.systems/api/interpreter','https://maps.mail.ru/osm/tools/overpass/api/interpreter'];
+const sleepMs=ms=>new Promise(r=>setTimeout(r,ms));
+// overpass-api.de tells how long until a query slot frees up; wait exactly that instead of hopping servers.
+async function overpassWaitSlot(log){try{let t=await (await fetch('https://overpass-api.de/api/status',{cache:'no-store'})).text(),free=/(\d+) slots? available now/.exec(t);if(free&&+free[1]>0)return;
+ let waits=[...t.matchAll(/in (\d+) seconds?/g)].map(m=>+m[1]);if(waits.length){let w=Math.min(90,Math.min(...waits)+1);log?.info('Сервер OSM занят — жду свободный слот '+w+' с');await sleepMs(w*1000)}}catch(e){}}
+async function overpassTry(url,q,timeout){let ctrl=new AbortController(),timer=setTimeout(()=>ctrl.abort(),timeout);
+ try{let r=await fetch(url,{method:'POST',body:'data='+encodeURIComponent(q),headers:{'Content-Type':'application/x-www-form-urlencoded'},signal:ctrl.signal});if(!r.ok)return {err:'HTTP '+r.status};
+  let t=await r.text(),j=null;try{j=JSON.parse(t)}catch(e){}if(!j||(j.remark&&/error|timed out/i.test(j.remark)&&!(j.elements||[]).length))return {err:'сервер занят'};return {json:j}}
+ catch(e){return {err:e.name==='AbortError'?'не ответил за '+Math.round(timeout/1000)+' с':'нет соединения'}}finally{clearTimeout(timer)}}
+// Main server first (waiting for its free slot, up to `attempts` tries), then the mirrors once each.
+async function overpassJSON(q,{timeout=180000,attempts=4,mirrors=OSM_MIRRORS.length,log}={}){let last='';
+ for(let i=0;i<attempts;i++){await overpassWaitSlot(log);let r=await overpassTry(OSM_PRIMARY,q,timeout);if(r.json){r.json.host='overpass-api.de';return r.json}
+  last='overpass-api.de: '+r.err;log?.warn('overpass-api.de — '+r.err+(i<attempts-1?', повторю после паузы':''));if(i<attempts-1)await sleepMs(4000*(i+1))}
+ for(const url of OSM_MIRRORS.slice(0,mirrors)){let host=url.split('/')[2];log?.info('Пробую запасной сервер '+host);let r=await overpassTry(url,q,Math.min(timeout,60000));if(r.json){r.json.host=host;return r.json}last=host+': '+r.err;log?.warn(host+' — '+r.err)}
+ throw Error(last||'OpenStreetMap недоступен')}
 async function idbGet(key){try{let db=await openStorage();return await new Promise((res,rej)=>{let q=db.transaction('projects','readonly').objectStore('projects').get(key);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})}catch(e){return null}}
 async function idbPut(key,val){try{let db=await openStorage();await new Promise((res,rej)=>{let tx=db.transaction('projects','readwrite');tx.objectStore('projects').put(val,key);tx.oncomplete=res;tx.onerror=()=>rej(tx.error)})}catch(e){}}
 function regionLog(id){let lines=[];T.logs.set(id,lines);T.logOpen.add(id);clearTimeout(T.logTimers.get(id));
@@ -1253,10 +1283,9 @@ async function buildRegionLive(r,log){
  let lk=await nominatimJSON(NOMINATIM+'/lookup?format=jsonv2&polygon_geojson=1&polygon_threshold=0.0002&accept-language=ru&osm_ids=R'+r.id),hit=lk.find(x=>['Polygon','MultiPolygon'].includes(x.geojson?.type));
  if(!hit){done('нет границы в OSM','err');throw Error('у провинции нет границы в OSM')}
  let boundary=geo(polygonClipping.union(pc(hit.geojson))),b=turf.bbox(feature(boundary)),q=osmQueries([b[1],b[0],b[3],b[2]].map(v=>v.toFixed(5)).join(','));done(fmtArea(area(boundary))+', Nominatim');
- done=log.step('Поселения, базы, аэродромы');let objects=await overpassJSON(q.objects,{log}).catch(e=>{done('нет ответа','err');throw e});done(fmtN(objects.elements.length,'объект','объекта','объектов')+', '+objects.host);
- done=log.step('Деревни и высоты');let nodes=await overpassJSON(q.nodes,{log}).catch(e=>{done('нет ответа','err');throw e});done(fmtN(nodes.elements.length,'точка','точки','точек')+', '+nodes.host);
+ done=log.step('Поселения, базы, аэродромы, деревни, высоты');let all=await overpassJSON(q.main,{log}).catch(e=>{done('нет ответа','err');throw e}),{objects,nodes}=osmSplit(all);done(fmtN(objects.elements.length,'объект','объекта','объектов')+' и '+fmtN(nodes.elements.length,'точка','точки','точек')+', '+all.host);
  if(osmLooksBroken(objects,nodes)){log.error('Сервер вернул пустой ответ по объектам — повторите сборку');throw Error('пустой ответ сервера')}
- done=log.step('Жилая застройка');let residential;try{residential=await overpassJSON(q.residential,{timeout:60000,mirrors:2,log,rounds:1});done(fmtN(residential.elements.length,'участок','участка','участков')+', '+residential.host)}catch(e){residential={elements:[]};done('пропущена — сервер не ответил; деревни без контура будут точками','warn')}
+ done=log.step('Жилая застройка');let residential;try{residential=await overpassJSON(q.residential,{timeout:90000,attempts:2,mirrors:1,log});done(fmtN(residential.elements.length,'участок','участка','участков')+', '+residential.host)}catch(e){residential={elements:[]};done('пропущена — сервер не ответил; деревни без контура будут точками','warn')}
  done=log.step('Обработка');await new Promise(res=>setTimeout(res,40));
  let {features,counts}=osmBuildFeatures(turf,{boundary,objects,nodes,residential}),simple=turf.simplify(feature(boundary),{tolerance:.0003,highQuality:false}).geometry;
  done(fmtN(counts.settlement,'поселение','поселения','поселений')+' ('+fmtN(counts.builtup)+' по застройке, '+fmtN(counts.approx)+' точками), '+fmtN(counts.military,'военный объект','военных объекта','военных объектов')+', '+fmtN(counts.airfield,'аэродром','аэродрома','аэродромов')+', '+fmtN(counts.peak,'высота','высоты','высот'));

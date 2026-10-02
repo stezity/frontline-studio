@@ -16,10 +16,16 @@ export const OSM_MIL = { base: 'Военная база', barracks: 'Казар�
 // area queries silently return nothing on mirrors without an areas database.
 export function osmQueries(bb) {
   return {
-    objects: `[out:json][timeout:600];(way["place"~"^(city|town|village|hamlet)$"](${bb});rel["place"~"^(city|town|village|hamlet)$"](${bb});rel["boundary"="administrative"]["admin_level"~"^(8|9)$"](${bb});way["landuse"="military"](${bb});rel["landuse"="military"](${bb});way["military"](${bb});rel["military"](${bb});way["aeroway"="aerodrome"](${bb});rel["aeroway"="aerodrome"](${bb}););out geom;`,
-    nodes: `[out:json][timeout:300];(node["place"~"^(city|town|village|hamlet)$"](${bb});node["natural"~"^(peak|volcano)$"]["name"](${bb}););out;`,
+    objects: `[out:json][timeout:600];(way["place"~"^(city|town|village|hamlet)$"](${bb});rel["place"~"^(city|town|village|hamlet)$"](${bb});rel["boundary"="administrative"]["admin_level"~"^(8|9)$"](${bb});way["landuse"="military"](${bb});rel["landuse"="military"](${bb});way["military"](${bb});rel["military"](${bb});way["aeroway"="aerodrome"](${bb});rel["aeroway"="aerodrome"](${bb});way["landuse"="brownfield"]["name"](${bb});rel["landuse"="brownfield"]["name"](${bb}););out geom;`,
+    nodes: `[out:json][timeout:300];(node["place"~"^(city|town|village|hamlet)$"](${bb});node["natural"~"^(peak|volcano)$"]["name"](${bb});node["historic"="ruins"]["abandoned"="yes"]["name"](${bb}););out;`,
     residential: `[out:json][timeout:600];(way["landuse"="residential"](${bb});rel["landuse"="residential"](${bb}););out geom;`,
+    // objects + nodes in a single request (one Overpass slot instead of two); split with osmSplit()
+    main: `[out:json][timeout:600];(way["place"~"^(city|town|village|hamlet)$"](${bb});rel["place"~"^(city|town|village|hamlet)$"](${bb});rel["boundary"="administrative"]["admin_level"~"^(8|9)$"](${bb});way["landuse"="military"](${bb});rel["landuse"="military"](${bb});way["military"](${bb});rel["military"](${bb});way["aeroway"="aerodrome"](${bb});rel["aeroway"="aerodrome"](${bb});way["landuse"="brownfield"]["name"](${bb});rel["landuse"="brownfield"]["name"](${bb});node["place"~"^(city|town|village|hamlet)$"](${bb});node["natural"~"^(peak|volcano)$"]["name"](${bb});node["historic"="ruins"]["abandoned"="yes"]["name"](${bb}););out geom;`,
   };
+}
+export function osmSplit(all) {
+  const els = all.elements || [];
+  return { objects: { elements: els.filter(e => e.type !== 'node') }, nodes: { elements: els.filter(e => e.type === 'node') } };
 }
 
 export const osmRound = c => [Math.round(c[0] * 1e5) / 1e5, Math.round(c[1] * 1e5) / 1e5];
@@ -82,8 +88,13 @@ export function osmClassify(t) {
   if (t.aeroway === 'aerodrome') return { k: 'airfield', s: t['aerodrome:type'] === 'military' || t.military ? 'Военный аэродром' : 'Аэродром' };
   if (t.military === 'airfield') return { k: 'airfield', s: 'Военный аэродром' };
   if (t.landuse === 'military' || t.military) return { k: 'military', s: OSM_MIL[t.military] || 'Военная территория' };
+  if (t.landuse === 'brownfield' && t.name) return { k: 'settlement', s: OSM_RUIN, brownfield: true };
   return null;
 }
+// A destroyed town: OSM editors drop its place=* tag and mark the point as ruins. Historic abandonments
+// (villages of 1948, settlements evacuated in 2005) keep abandoned:place=* and are left out.
+export const OSM_RUIN = 'Разрушенный населённый пункт';
+export const osmIsRuin = t => !!t && t.historic === 'ruins' && t.abandoned === 'yes' && !t.place && !t['abandoned:place'] && !!t.name;
 
 // Raw Overpass answers + the province boundary → features and counts.
 export function osmBuildFeatures(turf, { boundary, objects, nodes, residential }) {
@@ -100,9 +111,22 @@ export function osmBuildFeatures(turf, { boundary, objects, nodes, residential }
     const f = { k: c.k, n: osmNameOf(t), q: osmNamesOf(t), s: c.s, p: osmRound(p), g, id: el.type[0] + el.id };
     if (t.population) f.pop = +String(t.population).replace(/\D/g, '') || undefined;
     if (t.boundary === 'administrative') f.adm = 1;
+    if (c.brownfield) f.bf = 1;
     features.push(f);
   }
   const inF = (c, f) => { try { return turf.booleanPointInPolygon(c, turf.feature(f.g)); } catch { return false; } };
+  const ruinNodes = (nodes.elements || []).filter(e => e.type === 'node' && osmIsRuin(e.tags));
+  for (let i = features.length - 1; i >= 0; i--) {
+    const f = features[i];
+    if (!f.bf) continue;
+    const names = new Set((f.q || '').split('|'));
+    const town = ruinNodes.find(e => inF([e.lon, e.lat], f) && osmNamesOf(e.tags).split('|').some(n => names.has(n)));
+    // destroyed towns are retagged as large named brownfields (Rafah, 2024): keep those, or smaller ones
+    // that contain a ruined town of the same name; small named lots (single buildings) are dropped
+    if (!town && turf.area(turf.feature(f.g)) < 1e6) { features.splice(i, 1); continue; }
+    delete f.bf; f.ruin = 1;
+    if (town) { f.n = osmNameOf(town.tags); f.q = [...new Set([...names, ...osmNamesOf(town.tags).split('|')])].join('|'); }
+  }
   // Regional councils (one municipal polygon spanning many villages) are not settlements themselves.
   const settlements = features.filter(f => f.k === 'settlement');
   for (let i = features.length - 1; i >= 0; i--) {
@@ -139,7 +163,7 @@ export function osmBuildFeatures(turf, { boundary, objects, nodes, residential }
   const boxes = new Map(real.map(f => [f, turf.bbox(turf.feature(f.g))]));
   const inReal = c => real.some(f => { const b = boxes.get(f); return c[0] >= b[0] && c[0] <= b[2] && c[1] >= b[1] && c[1] <= b[3] && inF(c, f); });
   const nodeEls = (nodes.elements || []).filter(e => e.type === 'node' && inRegion([e.lon, e.lat]));
-  const placeNodes = nodeEls.filter(e => e.tags?.place && OSM_PLACE[e.tags.place] && !inReal([e.lon, e.lat]));
+  const placeNodes = nodeEls.filter(e => ((e.tags?.place && OSM_PLACE[e.tags.place]) || osmIsRuin(e.tags)) && !inReal([e.lon, e.lat]));
   const groups = new Map(placeNodes.map(e => [e.id, []]));
   for (const el of (residential?.elements || [])) {
     const g = osmElementGeometry(turf, el);
@@ -152,7 +176,8 @@ export function osmBuildFeatures(turf, { boundary, objects, nodes, residential }
     groups.get(best.id).push(g);
   }
   for (const e of placeNodes) {
-    const f = { k: 'settlement', n: osmNameOf(e.tags), q: osmNamesOf(e.tags), s: OSM_PLACE[e.tags.place], p: osmRound([e.lon, e.lat]), id: 'n' + e.id };
+    const f = { k: 'settlement', n: osmNameOf(e.tags), q: osmNamesOf(e.tags), s: OSM_PLACE[e.tags.place] || OSM_RUIN, p: osmRound([e.lon, e.lat]), id: 'n' + e.id };
+    if (!OSM_PLACE[e.tags.place]) f.ruin = 1;
     if (e.tags.population) f.pop = +String(e.tags.population).replace(/\D/g, '') || undefined;
     const parts = groups.get(e.id);
     if (parts.length) {
@@ -174,6 +199,7 @@ export function osmBuildFeatures(turf, { boundary, objects, nodes, residential }
   for (const f of features) counts[f.k] = (counts[f.k] || 0) + 1;
   counts.approx = features.filter(f => f.pt).length;
   counts.builtup = features.filter(f => f.b).length;
+  counts.ruins = features.filter(f => f.ruin).length;
   return { features, counts };
 }
 
