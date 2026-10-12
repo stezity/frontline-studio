@@ -5,7 +5,7 @@
    "name": "провинция Газа",
    "file": "regions/3935814.json",
    "bbox": [
-    34.3732,
+    34.3728,
     31.4272,
     34.5181,
     31.5487
@@ -18,7 +18,7 @@
     "builtup": 0,
     "ruins": 0
    },
-   "updated": "2026-10-02T06:03:27.218Z",
+   "updated": "2026-10-12T11:19:05.558Z",
    "snapshot": "2021-12-31T00:00:00Z"
   },
   {
@@ -91,7 +91,7 @@
    "file": "regions/4731199.json",
    "bbox": [
     34.2398,
-    31.2603,
+    31.258,
     34.3733,
     31.4043
    ],
@@ -102,7 +102,7 @@
     "builtup": 0,
     "ruins": 0
    },
-   "updated": "2026-10-02T06:41:45.663Z",
+   "updated": "2026-10-12T11:49:59.443Z",
    "snapshot": "2021-12-31T00:00:00Z"
   },
   {
@@ -139,12 +139,12 @@
     "military": 25,
     "airfield": 1,
     "settlement": 229,
-    "peak": 10,
+    "peak": 9,
     "approx": 12,
     "builtup": 214,
     "ruins": 0
    },
-   "updated": "2026-10-02T04:35:11.398Z"
+   "updated": "2026-10-12T10:47:13.967Z"
   },
   {
    "id": 1375620,
@@ -157,15 +157,15 @@
     33.3356
    ],
    "counts": {
-    "settlement": 462,
-    "military": 207,
+    "settlement": 470,
+    "military": 229,
     "airfield": 3,
     "peak": 80,
-    "approx": 19,
-    "builtup": 5,
+    "approx": 22,
+    "builtup": 7,
     "ruins": 2
    },
-   "updated": "2026-10-05T10:14:40.758Z"
+   "updated": "2026-10-12T10:25:38.645Z"
   },
   {
    "id": 1473938,
@@ -187,7 +187,7 @@
     "builtup": 0,
     "ruins": 0
    },
-   "updated": "2026-10-02T05:55:30.374Z",
+   "updated": "2026-10-12T10:59:45.038Z",
    "snapshot": "2021-12-31T00:00:00Z"
   },
   {
@@ -201,16 +201,16 @@
     31.8728
    ],
    "counts": {
-    "settlement": 370,
+    "settlement": 371,
     "airfield": 11,
     "military": 449,
     "peak": 80,
     "approx": 19,
-    "builtup": 57,
+    "builtup": 58,
     "ruins": 1
    },
-   "updated": "2026-10-02T06:24:43.721Z"
+   "updated": "2026-10-12T11:02:25.521Z"
   }
  ],
- "updated": "2026-10-05T11:37:55.458Z"
+ "updated": "2026-10-12T11:49:59.443Z"
 }
