@@ -5,7 +5,7 @@
    "name": "провинция Газа",
    "file": "regions/3935814.json",
    "bbox": [
-    34.3728,
+    34.3732,
     31.4272,
     34.5181,
     31.5487
@@ -18,7 +18,7 @@
     "builtup": 0,
     "ruins": 0
    },
-   "updated": "2026-10-12T11:19:05.558Z",
+   "updated": "2026-10-19T08:58:08.678Z",
    "snapshot": "2021-12-31T00:00:00Z"
   },
   {
@@ -61,7 +61,7 @@
     "builtup": 0,
     "ruins": 0
    },
-   "updated": "2026-10-05T11:37:55.458Z",
+   "updated": "2026-10-19T09:12:52.871Z",
    "snapshot": "2021-12-31T00:00:00Z"
   },
   {
@@ -91,7 +91,7 @@
    "file": "regions/4731199.json",
    "bbox": [
     34.2398,
-    31.258,
+    31.2603,
     34.3733,
     31.4043
    ],
@@ -102,7 +102,7 @@
     "builtup": 0,
     "ruins": 0
    },
-   "updated": "2026-10-12T11:49:59.443Z",
+   "updated": "2026-10-19T09:08:53.204Z",
    "snapshot": "2021-12-31T00:00:00Z"
   },
   {
@@ -139,12 +139,12 @@
     "military": 25,
     "airfield": 1,
     "settlement": 229,
-    "peak": 9,
+    "peak": 10,
     "approx": 12,
     "builtup": 214,
     "ruins": 0
    },
-   "updated": "2026-10-12T10:47:13.967Z"
+   "updated": "2026-10-19T08:37:12.330Z"
   },
   {
    "id": 1375620,
@@ -157,15 +157,15 @@
     33.3356
    ],
    "counts": {
-    "settlement": 470,
-    "military": 229,
+    "settlement": 454,
+    "military": 207,
     "airfield": 3,
     "peak": 80,
-    "approx": 22,
-    "builtup": 7,
+    "approx": 11,
+    "builtup": 5,
     "ruins": 2
    },
-   "updated": "2026-10-12T10:25:38.645Z"
+   "updated": "2026-10-19T08:34:28.274Z"
   },
   {
    "id": 1473938,
@@ -187,7 +187,7 @@
     "builtup": 0,
     "ruins": 0
    },
-   "updated": "2026-10-12T10:59:45.038Z",
+   "updated": "2026-10-19T08:45:39.459Z",
    "snapshot": "2021-12-31T00:00:00Z"
   },
   {
@@ -201,16 +201,16 @@
     31.8728
    ],
    "counts": {
-    "settlement": 371,
+    "settlement": 370,
     "airfield": 11,
     "military": 449,
     "peak": 80,
     "approx": 19,
-    "builtup": 58,
+    "builtup": 57,
     "ruins": 1
    },
-   "updated": "2026-10-12T11:02:25.521Z"
+   "updated": "2026-10-19T08:49:06.943Z"
   }
  ],
- "updated": "2026-10-12T11:49:59.443Z"
+ "updated": "2026-10-19T09:12:52.871Z"
 }
