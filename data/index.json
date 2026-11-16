@@ -5,7 +5,7 @@
    "name": "провинция Газа",
    "file": "regions/3935814.json",
    "bbox": [
-    34.3732,
+    34.3728,
     31.4272,
     34.5181,
     31.5487
@@ -18,7 +18,7 @@
     "builtup": 0,
     "ruins": 0
    },
-   "updated": "2026-10-19T08:58:08.678Z",
+   "updated": "2026-11-16T11:50:27.571Z",
    "snapshot": "2021-12-31T00:00:00Z"
   },
   {
@@ -27,7 +27,7 @@
    "file": "regions/4731198.json",
    "bbox": [
     34.3083,
-    31.3738,
+    31.3737,
     34.4267,
     31.4663
    ],
@@ -39,7 +39,7 @@
     "builtup": 0,
     "ruins": 0
    },
-   "updated": "2026-11-09T12:27:04.132Z",
+   "updated": "2026-11-16T12:01:54.178Z",
    "snapshot": "2021-12-31T00:00:00Z"
   },
   {
@@ -82,7 +82,7 @@
     "builtup": 0,
     "ruins": 0
    },
-   "updated": "2026-11-09T11:51:41.760Z",
+   "updated": "2026-11-16T11:39:50.056Z",
    "snapshot": "2021-12-31T00:00:00Z"
   },
   {
@@ -139,12 +139,12 @@
     "military": 25,
     "airfield": 1,
     "settlement": 229,
-    "peak": 10,
+    "peak": 9,
     "approx": 12,
     "builtup": 214,
     "ruins": 0
    },
-   "updated": "2026-11-09T11:14:25.655Z"
+   "updated": "2026-11-16T10:59:19.733Z"
   },
   {
    "id": 1375620,
@@ -157,15 +157,15 @@
     33.3356
    ],
    "counts": {
-    "settlement": 461,
-    "military": 229,
+    "settlement": 454,
+    "military": 207,
     "airfield": 3,
     "peak": 80,
-    "approx": 13,
-    "builtup": 7,
+    "approx": 11,
+    "builtup": 5,
     "ruins": 2
    },
-   "updated": "2026-11-09T11:02:54.119Z"
+   "updated": "2026-11-16T10:47:44.817Z"
   },
   {
    "id": 1473938,
@@ -187,7 +187,7 @@
     "builtup": 0,
     "ruins": 0
    },
-   "updated": "2026-10-19T08:45:39.459Z",
+   "updated": "2026-11-16T11:27:40.572Z",
    "snapshot": "2021-12-31T00:00:00Z"
   },
   {
@@ -203,14 +203,14 @@
    "counts": {
     "settlement": 370,
     "airfield": 11,
-    "military": 449,
+    "military": 450,
     "peak": 80,
     "approx": 19,
     "builtup": 57,
     "ruins": 1
    },
-   "updated": "2026-11-09T11:42:15.403Z"
+   "updated": "2026-11-16T11:36:18.349Z"
   }
  ],
- "updated": "2026-11-09T12:27:04.132Z"
+ "updated": "2026-11-16T12:01:54.178Z"
 }
